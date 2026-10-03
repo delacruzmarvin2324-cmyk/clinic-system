@@ -8,6 +8,11 @@ const _configuredApiUrl = String.fromEnvironment('API_BASE_URL');
 
 String get apiBaseUrl {
   if (_configuredApiUrl.isNotEmpty) return _configuredApiUrl;
+
+  if (kReleaseMode) {
+    return 'https://clinic-system-w383.onrender.com/api';
+  }
+
   return defaultTargetPlatform == TargetPlatform.android
       ? 'http://10.0.2.2:8000/api'
       : 'http://127.0.0.1:8000/api';
@@ -43,20 +48,25 @@ class ClinicApi {
     try {
       switch (method) {
         case 'POST':
-          response = await _client.post(
-            uri,
-            headers: _headers,
-            body: jsonEncode(body ?? {}),
-          );
+          response = await _client
+              .post(uri, headers: _headers, body: jsonEncode(body ?? {}))
+              .timeout(const Duration(seconds: 60));
         default:
-          response = await _client.get(uri, headers: _headers);
+          response = await _client
+              .get(uri, headers: _headers)
+              .timeout(const Duration(seconds: 60));
       }
     } catch (_) {
       throw ApiException('Could not reach the clinic server at $apiBaseUrl.');
     }
-    final dynamic payload = response.body.isEmpty
-        ? {}
-        : jsonDecode(response.body);
+    dynamic payload;
+    try {
+      payload = response.body.isEmpty ? {} : jsonDecode(response.body);
+    } on FormatException {
+      throw ApiException(
+        'The clinic server returned an invalid response (${response.statusCode}). Check the API deployment and try again.',
+      );
+    }
     if (response.statusCode < 200 || response.statusCode >= 300) {
       if (payload is Map && payload['detail'] != null) {
         throw ApiException(payload['detail'].toString());

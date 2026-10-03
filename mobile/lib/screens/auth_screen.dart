@@ -30,6 +30,8 @@ class _AuthScreenState extends State<AuthScreen> {
   final _captchaAnswer = TextEditingController();
   DateTime? _birthDate;
   Map<String, dynamic>? _captcha;
+  bool _captchaLoading = false;
+  String? _captchaError;
   bool _registering = false;
   bool _busy = false;
   bool _obscurePassword = true;
@@ -55,11 +57,17 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _refreshCaptcha() async {
+    setState(() {
+      _captchaLoading = true;
+      _captchaError = null;
+    });
     try {
       final captcha = await widget.api.captchaChallenge();
       if (mounted) setState(() => _captcha = captcha);
     } on ApiException catch (error) {
-      if (mounted) setState(() => _error = error.message);
+      if (mounted) setState(() => _captchaError = error.message);
+    } finally {
+      if (mounted) setState(() => _captchaLoading = false);
     }
   }
 
@@ -340,7 +348,9 @@ class _AuthScreenState extends State<AuthScreen> {
                                   Expanded(
                                     child: Text(
                                       _captcha?['question']?.toString() ??
-                                          'Loading math challenge...',
+                                          (_captchaLoading
+                                              ? 'Loading math challenge...'
+                                              : 'Challenge unavailable. Tap refresh.'),
                                       style: const TextStyle(
                                         color: ClinicColors.navy,
                                         fontSize: 12,
@@ -350,12 +360,28 @@ class _AuthScreenState extends State<AuthScreen> {
                                   ),
                                   IconButton(
                                     tooltip: 'Refresh math challenge',
-                                    onPressed: _refreshCaptcha,
-                                    icon: const Icon(Icons.refresh),
+                                    onPressed: _captchaLoading
+                                        ? null
+                                        : _refreshCaptcha,
+                                    icon: _captchaLoading
+                                        ? const SizedBox.square(
+                                            dimension: 18,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Icon(Icons.refresh),
                                     visualDensity: VisualDensity.compact,
                                   ),
                                 ],
                               ),
+                              if (_captchaError != null) ...[
+                                Text(
+                                  _captchaError!,
+                                  style: TextStyle(color: colors.error),
+                                ),
+                                const SizedBox(height: 10),
+                              ],
                               _field(
                                 'Your answer',
                                 _captchaAnswer,
