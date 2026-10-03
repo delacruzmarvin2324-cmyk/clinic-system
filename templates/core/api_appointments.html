@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Appointments API | MediCare{% endblock %}
+
+{% block content %}
+<div class="dashboard-container fade-in">
+    <div class="dashboard-header">
+        <div>
+            <h2>Appointments API</h2>
+            <p style="color: var(--text-secondary);">List of appointments (API view)</p>
+        </div>
+    </div>
+
+    <div class="glass-panel fade-in" id="api-appointments-container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; gap:12px;">
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input class="form-control api-search" placeholder="Search appointments by patient, doctor, date..." style="min-width:320px;" />
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-primary api-view-json">View JSON</button>
+                <button class="btn-primary api-export-json" style="background:var(--accent-color);">Export JSON</button>
+            </div>
+        </div>
+        <pre class="api-json-pre" style="display:none; white-space:pre-wrap; max-height:400px; overflow:auto; border-radius:12px; padding:1rem; background:#0f172a1a;">{}</pre>
+        <div class="dashboard-stats" style="margin-bottom:1.6rem;">
+            <div class="glass-panel stat-card">
+                <h3>TOTAL APPOINTMENTS</h3>
+                <div class="stat-value">{{ appointments_count }}</div>
+            </div>
+            <div class="glass-panel stat-card">
+                <h3>UPCOMING</h3>
+                <div class="stat-value">{{ upcoming_count }}</div>
+            </div>
+        </div>
+
+        <div class="table-panel">
+        <h3 style="margin-bottom: 1rem;"><i class="fa-regular fa-calendar-check" style="margin-right: 10px;"></i> Appointments</h3>
+        {% if appointments %}
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in appointments %}
+                    <tr>
+                        <td>{{ a.date }}</td>
+                        <td>{{ a.time }}</td>
+                        <td>{{ a.patient.user.first_name }} {{ a.patient.user.last_name }}</td>
+                        <td>Dr. {{ a.doctor.user.first_name }} {{ a.doctor.user.last_name }}</td>
+                        <td>{{ a.appointment_type }}</td>
+                        <td><span class="badge badge-{{ a.status|lower }}">{{ a.status }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align:center; padding:2rem; color:var(--text-secondary);">No appointments found.</div>
+        {% endif %}
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/api_dashboard.js' %}"></script>
+{% endblock %}

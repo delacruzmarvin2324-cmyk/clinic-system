@@ -1,0 +1,24 @@
+git config --global --add safe.directory E:/Clinic
+
+services:
+  - type: web
+    name: clinic-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input
+    preDeployCommand: python manage.py migrate --noinput
+    startCommand: gunicorn clinic_system.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120
+    healthCheckPath: /api/auth/challenge/
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: clinic-db
+          property: connectionString
+
+databases:
+  - name: clinic-db
+    databaseName: clinic
+    user: clinic

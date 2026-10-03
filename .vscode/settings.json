@@ -1,0 +1,6 @@
+{
+    "terminal.integrated.cwd": "${workspaceFolder}/mobile",
+    "cSpell.words": [
+        "stylesheet"
+    ]
+}

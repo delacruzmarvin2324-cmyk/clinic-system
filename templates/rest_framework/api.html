@@ -1,0 +1,243 @@
+{% extends "rest_framework/base.html" %}
+
+{% block style %}
+  {{ block.super }}
+  <style>
+    /* MediCare Clinic System Colors */
+    :root {
+      --primary-color: #0ea5e9;
+      --primary-hover: #0284c7;
+      --accent-color: #2dd4bf;
+      --accent-hover: #14b8a6;
+      --bg-color: #f0fdfa;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --stat-green: #22c55e;
+      --stat-red: #ef4444;
+    }
+
+    body {
+      background-color: var(--bg-color) !important;
+      color: var(--text-primary) !important;
+    }
+
+    .navbar {
+      background-color: var(--card-bg) !important;
+      border-bottom: 2px solid var(--card-border) !important;
+    }
+
+    .navbar-brand {
+      color: var(--text-primary) !important;
+      font-weight: 700 !important;
+    }
+
+    .navbar-brand::before {
+      content: "♥ ";
+      color: var(--accent-color);
+      margin-right: 0.5rem;
+    }
+
+    a {
+      color: var(--primary-color) !important;
+    }
+
+    a:hover {
+      color: var(--accent-color) !important;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color) !important;
+      border-color: var(--primary-color) !important;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover) !important;
+      border-color: var(--primary-hover) !important;
+    }
+
+    .btn-danger {
+      background-color: var(--stat-red) !important;
+      border-color: var(--stat-red) !important;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-primary) !important;
+    }
+
+    .breadcrumb {
+      background-color: var(--card-bg) !important;
+      border: 1px solid var(--card-border) !important;
+      border-radius: 8px !important;
+    }
+
+    .panel {
+      border: 2px solid var(--card-border) !important;
+      border-radius: 12px !important;
+    }
+
+    .panel-heading {
+      background-color: #f8fafc !important;
+      border-bottom: 2px solid var(--card-border) !important;
+    }
+
+    .form-control {
+      border: 2px solid var(--card-border) !important;
+      border-radius: 8px !important;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary-color) !important;
+      box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.25) !important;
+    }
+
+    .btn {
+      border-radius: 8px !important;
+      padding: 0.6rem 1.2rem !important;
+      font-weight: 600 !important;
+    }
+
+    button:hover,
+    .btn:hover {
+      transform: translateY(-2px) !important;
+    }
+
+    .nav-tabs .nav-link {
+      color: var(--text-secondary) !important;
+      border-bottom: 3px solid transparent !important;
+      transition: all 0.25s !important;
+    }
+
+    .nav-tabs .nav-link:hover {
+      color: var(--primary-color) !important;
+      border-bottom-color: var(--primary-color) !important;
+    }
+
+    .nav-tabs .nav-link.active {
+      color: var(--primary-color) !important;
+      border-bottom-color: var(--primary-color) !important;
+      background-color: transparent !important;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"],
+    textarea,
+    select {
+      border: 2px solid var(--card-border) !important;
+      border-radius: 8px !important;
+      font-size: 1rem !important;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--primary-color) !important;
+      box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.25) !important;
+    }
+
+    code {
+      background-color: #f1f5f9 !important;
+      color: var(--text-primary) !important;
+      border-radius: 4px !important;
+      padding: 0.2rem 0.5rem !important;
+    }
+
+    pre {
+      background-color: #1e293b !important;
+      color: #e2e8f0 !important;
+      border-radius: 8px !important;
+    }
+
+    .request-info,
+    .response-info {
+      background-color: #1e293b !important;
+      color: #e2e8f0 !important;
+      border: 2px solid var(--card-border) !important;
+      border-radius: 8px !important;
+      padding: 1rem !important;
+    }
+
+    .request-info pre,
+    .response-info pre {
+      background-color: transparent !important;
+      border: none !important;
+      color: #e2e8f0 !important;
+      margin: 0 !important;
+    }
+
+    .page-header {
+      border-bottom: 2px solid var(--card-border) !important;
+      padding-bottom: 1rem !important;
+    }
+
+    .content-main {
+      background-color: var(--card-bg) !important;
+      border: 2px solid var(--card-border) !important;
+      border-radius: 12px !important;
+      padding: 1.5rem !important;
+    }
+
+    table {
+      border: 1px solid var(--card-border) !important;
+    }
+
+    table th {
+      background-color: #f8fafc !important;
+      border: 1px solid var(--card-border) !important;
+      color: var(--text-primary) !important;
+    }
+
+    table td {
+      border: 1px solid var(--card-border) !important;
+      color: var(--text-primary) !important;
+    }
+
+    table tbody tr:hover {
+      background-color: #f8fafc !important;
+    }
+
+    .well {
+      background-color: var(--card-bg) !important;
+      border: 2px solid var(--card-border) !important;
+      border-radius: 12px !important;
+    }
+
+    .label-success {
+      background-color: var(--stat-green) !important;
+    }
+
+    .label-danger {
+      background-color: var(--stat-red) !important;
+    }
+
+    footer {
+      background-color: var(--card-bg) !important;
+      border-top: 2px solid var(--card-border) !important;
+      padding: 2rem !important;
+      margin-top: 3rem !important;
+      color: var(--text-secondary) !important;
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        flex-direction: column !important;
+      }
+
+      .btn {
+        width: 100% !important;
+        margin-bottom: 0.5rem !important;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block branding %}
+  <a class='navbar-brand' rel="nofollow" href='/'>
+    MediCare API
+  </a>
+{% endblock %}

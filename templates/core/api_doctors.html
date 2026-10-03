@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Doctors API | MediCare{% endblock %}
+
+{% block content %}
+<div class="dashboard-container fade-in">
+    <div class="dashboard-header">
+        <div>
+            <h2>Doctors API</h2>
+            <p style="color: var(--text-secondary);">List of doctors (API view)</p>
+        </div>
+    </div>
+
+    <div class="glass-panel fade-in" id="api-doctors-container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; gap:12px;">
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input class="form-control api-search" placeholder="Search doctors by name, specialty, contact..." style="min-width:320px;" />
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-primary api-view-json">View JSON</button>
+                <button class="btn-primary api-export-json" style="background:var(--accent-color);">Export JSON</button>
+            </div>
+        </div>
+        <pre class="api-json-pre" style="display:none; white-space:pre-wrap; max-height:400px; overflow:auto; border-radius:12px; padding:1rem; background:#0f172a1a;">{}</pre>
+        <div class="dashboard-stats" style="margin-bottom:1.6rem;">
+            <div class="glass-panel stat-card">
+                <h3>TOTAL DOCTORS</h3>
+                <div class="stat-value">{{ doctors_count }}</div>
+            </div>
+            <div class="glass-panel stat-card">
+                <h3>SPECIALIZATIONS</h3>
+                <div class="stat-value">{{ doctors_count }}</div>
+            </div>
+        </div>
+
+        <div class="table-panel">
+        <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-user-md" style="margin-right: 10px;"></i> Doctors</h3>
+        {% if doctors %}
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Specialty</th>
+                        <th>Contact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in doctors %}
+                    <tr>
+                        <td>Dr. {{ d.user.first_name }} {{ d.user.last_name }}</td>
+                        <td>{{ d.specialty|default:'-' }}</td>
+                        <td>{{ d.contact_number|default:'-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align:center; padding:2rem; color:var(--text-secondary);">No doctors found.</div>
+        {% endif %}
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/api_dashboard.js' %}"></script>
+{% endblock %}

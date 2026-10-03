@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Appointment | MediCare{% endblock %}
+
+{% block content %}
+<div class="auth-container fade-in">
+    <div class="glass-panel auth-card" style="max-width: 600px;">
+        <div class="auth-header">
+            <h2><i class="fa-regular fa-calendar-plus" style="color: var(--primary-color); margin-right: 10px;"></i>Book Appointment</h2>
+            <p>Schedule a consultation with our doctors</p>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="form-error" style="color: var(--stat-red); margin-bottom: 1rem; font-weight: 700;">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            {% for field in form %}
+                <div class="form-group fade-in">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div style="color: var(--stat-red); font-size: 0.9rem; margin-top: 0.5rem; font-weight: 600;">
+                            {{ field.errors|striptags }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn-primary fade-in" style="width: 100%; margin-top: 1rem;">
+                Confirm Booking <i class="fa-solid fa-check" style="margin-left: 8px;"></i>
+            </button>
+        </form>
+
+        {% if prediction %}
+        <div class="glass-panel fade-in" style="margin-top: 1rem; padding: 1.2rem 1.3rem; border-left: 4px solid var(--accent-color);">
+            <h4 style="margin-bottom: 0.4rem;">No-show risk preview</h4>
+            <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">
+                Estimated risk: <strong>{{ prediction.risk_probability }}</strong>
+                <span style="margin-left: 0.4rem;">({{ prediction.risk_level }})</span>
+            </p>
+            <p style="margin-top: 0.4rem; color: var(--text-secondary); font-size: 0.95rem;">
+                This helps the clinic prioritize follow-up for appointments that may be harder to attend.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

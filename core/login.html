@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Login | MediCare{% endblock %}
+
+{% block content %}
+<div class="auth-container fade-in">
+    <div class="glass-panel auth-card">
+        <div class="auth-header">
+            <h2>Welcome Back</h2>
+            <p>Enter your credentials to access your account</p>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group fade-in">
+                <label for="id_username" class="form-label">Username</label>
+                <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter username" required>
+            </div>
+            
+            <div class="form-group fade-in">
+                <label for="id_password" class="form-label">Password</label>
+                <input type="password" name="password" id="id_password" class="form-control" placeholder="Enter password" required>
+            </div>
+            
+            <div class="form-group fade-in">
+                <label for="id_captcha" class="form-label">{{ captcha.question }}</label>
+                <input type="number" name="captcha_answer" id="id_captcha" class="form-control" placeholder="Enter your answer" required>
+                <small style="color: var(--text-secondary);">Please solve this math problem to prove you're human</small>
+            </div>
+            
+            <button type="submit" class="btn-primary fade-in" style="width: 100%; margin-top: 1rem;">Login <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i></button>
+        </form>
+        
+        <div class="auth-footer fade-in">
+            New patient? <a href="{% url 'register' %}">Register here</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

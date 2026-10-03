@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Patients API | MediCare{% endblock %}
+
+{% block content %}
+<div class="dashboard-container fade-in">
+    <div class="dashboard-header">
+        <div>
+            <h2>Patients API</h2>
+            <p style="color: var(--text-secondary);">List of patient profiles (API view)</p>
+        </div>
+    </div>
+
+    <div class="glass-panel fade-in" id="api-patients-container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; gap:12px;">
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input class="form-control api-search" placeholder="Search patients by name, phone, address..." style="min-width:320px;" />
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-primary api-view-json">View JSON</button>
+                <button class="btn-primary api-export-json" style="background:var(--accent-color);">Export JSON</button>
+            </div>
+        </div>
+        <pre class="api-json-pre" style="display:none; white-space:pre-wrap; max-height:400px; overflow:auto; border-radius:12px; padding:1rem; background:#0f172a1a;">{}</pre>
+        <div class="dashboard-stats" style="margin-bottom:1.6rem;">
+            <div class="glass-panel stat-card">
+                <h3>TOTAL PATIENTS</h3>
+                <div class="stat-value">{{ patients_count }}</div>
+            </div>
+            <div class="glass-panel stat-card">
+                <h3>RECENT PATIENTS</h3>
+                <div class="stat-value">{{ recent_count }}</div>
+            </div>
+        </div>
+
+        <div class="table-panel">
+        <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-user-injured" style="margin-right: 10px;"></i> Patients</h3>
+        {% if patients %}
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Date of Birth</th>
+                        <th>Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in patients %}
+                    <tr>
+                        <td>{{ p.user.first_name }} {{ p.user.last_name }}</td>
+                        <td>{{ p.phone_number|default:'-' }}</td>
+                        <td>{{ p.date_of_birth|default:'-' }}</td>
+                        <td>{{ p.address|default:'-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align:center; padding:2rem; color:var(--text-secondary);">No patients found.</div>
+        {% endif %}
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/api_dashboard.js' %}"></script>
+{% endblock %}

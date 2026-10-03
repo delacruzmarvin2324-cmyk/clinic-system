@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Premium Clinic System{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar fade-in">
+        <a href="{% url 'dashboard' %}" class="navbar-brand">
+            <i class="fa-solid fa-heart-pulse"></i>
+            Medi<span>Care</span>
+        </a>
+        <div class="nav-links">
+            {% if user.is_authenticated %}
+                <span class="nav-item">Hello, {{ user.first_name|default:user.username }}</span>
+                {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'add_doctor' %}" class="btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.9rem;">Add Doctor</a>
+                {% endif %}
+                <a href="{% url 'dashboard' %}" class="nav-item">Dashboard</a>
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-primary" style="padding: 0.5rem 1.2rem; font-size: 0.9rem;">Logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="nav-item">Login</a>
+                <a href="{% url 'register' %}" class="btn-primary">Register Patient</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    {% if messages %}
+        <div class="messages" style="position: fixed; top: 90px; right: 20px; z-index: 1100; max-width: 360px;">
+            {% for message in messages %}
+                <div class="glass-panel message-toast" style="padding: 1rem 1.2rem; margin-bottom: 0.7rem; border-left: 4px solid var(--accent-color);">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+
+    <script>
+        // Optional JS for animations
+        document.addEventListener("DOMContentLoaded", () => {
+            const elements = document.querySelectorAll('.fade-in');
+            elements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.15}s`;
+            });
+        });
+    </script>
+</body>
+</html>
