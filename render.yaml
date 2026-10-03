@@ -3,7 +3,6 @@
     name: clinic-api
     runtime: python
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input
-    preDeployCommand: python manage.py migrate --noinput
     startCommand: python manage.py migrate --noinput && gunicorn clinic_system.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120
     healthCheckPath: /api/auth/challenge/
     envVars:
