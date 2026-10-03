@@ -1,6 +1,4 @@
-git config --global --add safe.directory E:/Clinic
-
-services:
+﻿services:
   - type: web
     name: clinic-api
     runtime: python
