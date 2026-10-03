@@ -14,7 +14,17 @@ The Flutter APK needs a public HTTPS API URL to work outside your local Wi-Fi. T
 1. Push the repo to GitHub.
 2. In Render, choose **New +** then **Blueprint**, connect the GitHub repo, and apply its `render.yaml`.
 3. After the deploy completes, copy the service's public HTTPS URL, for example `https://clinic-api-xxxx.onrender.com`.
-4. Create the first administrator from the Render Shell with `python manage.py createsuperuser`.
+4. In the Render dashboard, open the `clinic-api` service's **Environment** settings and add these variables for the first doctor account:
+
+	- `INITIAL_DOCTOR_USERNAME`
+	- `INITIAL_DOCTOR_PASSWORD`
+	- `INITIAL_DOCTOR_FIRST_NAME`
+	- `INITIAL_DOCTOR_LAST_NAME`
+	- `INITIAL_DOCTOR_EMAIL`
+	- `INITIAL_DOCTOR_SPECIALTY`
+	- `INITIAL_DOCTOR_CONTACT_NUMBER`
+
+	Use a unique, strong password and keep it in Render's environment settings; do not commit it to the repository. Save the changes and deploy. The service startup migrates the database and creates the doctor if that username does not already exist. If no initial doctor variables are set, provisioning is skipped. Existing doctor accounts are not assigned a new password.
 
 ## Build the APK for the hosted API
 

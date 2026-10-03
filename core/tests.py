@@ -1,10 +1,140 @@
 from datetime import date, time, timedelta
+from io import StringIO
+import os
+from unittest.mock import patch
 
+from django.core import signing
+from django.core.management import call_command
 from django.test import SimpleTestCase
 from rest_framework.test import APITestCase
 
 from .models import Appointment, DoctorProfile, PatientProfile, User
 from .ml import get_risk_level, predict_no_show_risk, predict_no_show_risk_from_profile
+
+
+class InitialDoctorProvisioningTests(APITestCase):
+    settings = {
+        'INITIAL_DOCTOR_USERNAME': 'initial_doctor',
+        'INITIAL_DOCTOR_PASSWORD': 'Cobalt!River728_Sky',
+        'INITIAL_DOCTOR_FIRST_NAME': 'Avery',
+        'INITIAL_DOCTOR_LAST_NAME': 'Morgan',
+        'INITIAL_DOCTOR_EMAIL': 'avery.morgan@example.test',
+        'INITIAL_DOCTOR_SPECIALTY': 'Family medicine',
+        'INITIAL_DOCTOR_CONTACT_NUMBER': '555-0100',
+    }
+
+    def test_creates_doctor_once_from_environment(self):
+        output = StringIO()
+        with patch.dict(os.environ, self.settings, clear=True):
+            call_command('provision_initial_doctor', stdout=output)
+            call_command('provision_initial_doctor', stdout=output)
+
+        user = User.objects.get(username='initial_doctor')
+        self.assertTrue(user.is_doctor)
+        self.assertTrue(user.check_password(self.settings['INITIAL_DOCTOR_PASSWORD']))
+        self.assertEqual(user.doctor_profile.specialty, 'Family medicine')
+        self.assertEqual(User.objects.filter(username='initial_doctor').count(), 1)
+        self.assertIn('already exists; skipped', output.getvalue())
+
+        challenge = self.client.get('/api/auth/challenge/').data
+        answer = signing.loads(
+            challenge['challenge'], salt='mobile-login-captcha'
+        )
+        response = self.client.post('/api/auth/login/', {
+            'username': 'initial_doctor',
+            'password': self.settings['INITIAL_DOCTOR_PASSWORD'],
+            'captcha_challenge': challenge['challenge'],
+            'captcha_answer': str(answer),
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['user']['role'], 'doctor')
+
+        doctors = self.client.get('/api/doctors/')
+        self.assertEqual(doctors.status_code, 200)
+        self.assertEqual(doctors.data[0]['specialty'], 'Family medicine')
+
+        patient_response = self.client.post('/api/auth/register/', {
+            'username': 'booking_patient',
+            'password': 'Cedar_River_39!x',
+            'first_name': 'Casey',
+            'last_name': 'Taylor',
+            'email': 'casey.taylor@example.test',
+            'phone_number': '555-0101',
+            'date_of_birth': '1990-04-12',
+        }, format='json')
+        self.assertEqual(patient_response.status_code, 201)
+
+        booking = self.client.post('/api/mobile/appointments/book/', {
+            'doctor_id': doctors.data[0]['id'],
+            'appointment_type': 'Consultation',
+            'date': (date.today() + timedelta(days=1)).isoformat(),
+            'time': '10:00',
+        }, format='json', HTTP_AUTHORIZATION=f"Token {patient_response.data['token']}")
+        self.assertEqual(booking.status_code, 201)
+
+        challenge = self.client.get('/api/auth/challenge/').data
+        answer = signing.loads(challenge['challenge'], salt='mobile-login-captcha')
+        response = self.client.post('/api/auth/login/', {
+            'username': 'initial_doctor',
+            'password': self.settings['INITIAL_DOCTOR_PASSWORD'],
+            'captcha_challenge': challenge['challenge'],
+            'captcha_answer': str(answer),
+        }, format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['user']['role'], 'doctor')
+
+        doctor_headers = {'HTTP_AUTHORIZATION': f"Token {response.data['token']}"}
+        dashboard = self.client.get('/api/mobile/dashboard/', **doctor_headers)
+        self.assertEqual(dashboard.status_code, 200)
+        self.assertEqual(dashboard.data['appointments'][0]['status'], 'Pending')
+
+        decision = self.client.post(
+            f"/api/mobile/appointments/{booking.data['id']}/decision/",
+            {'action': 'accept'},
+            format='json',
+            **doctor_headers,
+        )
+        self.assertEqual(decision.status_code, 200)
+        self.assertEqual(decision.data['status'], 'Scheduled')
+
+        patient_dashboard = self.client.get(
+            '/api/mobile/dashboard/',
+            HTTP_AUTHORIZATION=f"Token {patient_response.data['token']}",
+        )
+        self.assertEqual(patient_dashboard.status_code, 200)
+        self.assertEqual(patient_dashboard.data['appointments'][0]['status'], 'Scheduled')
+
+    def test_partial_configuration_fails_clearly(self):
+        output = StringIO()
+        with patch.dict(os.environ, {'INITIAL_DOCTOR_USERNAME': 'initial_doctor'}, clear=True):
+            call_command('provision_initial_doctor', stderr=output)
+
+        self.assertIn('missing settings', output.getvalue())
+        self.assertFalse(User.objects.filter(username='initial_doctor').exists())
+
+    def test_invalid_doctor_settings_do_not_stop_provisioning_command(self):
+        output = StringIO()
+        invalid_settings = {
+            **self.settings,
+            'INITIAL_DOCTOR_EMAIL': 'not-an-email',
+        }
+        with patch.dict(os.environ, invalid_settings, clear=True):
+            call_command('provision_initial_doctor', stderr=output)
+
+        self.assertIn('valid email address', output.getvalue())
+        self.assertFalse(User.objects.filter(username='initial_doctor').exists())
+
+    def test_weak_password_does_not_stop_provisioning_command(self):
+        output = StringIO()
+        invalid_settings = {
+            **self.settings,
+            'INITIAL_DOCTOR_PASSWORD': 'password',
+        }
+        with patch.dict(os.environ, invalid_settings, clear=True):
+            call_command('provision_initial_doctor', stderr=output)
+
+        self.assertIn('password', output.getvalue().lower())
+        self.assertFalse(User.objects.filter(username='initial_doctor').exists())
 
 
 class AppointmentRiskPredictionTests(SimpleTestCase):
